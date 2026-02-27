@@ -1,5 +1,5 @@
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 import json
 import os
 from datetime import datetime
@@ -27,13 +27,14 @@ if not user_api_key:
     st.stop()
 
 try:
-    client = genai.Client(api_key=user_api_key)
+    genai.configure(api_key=user_api_key)
+    model = genai.GenerativeModel("gemini-1.5-flash")
 except Exception as e:
     st.error(f"Invalid API Key: {e}")
     st.stop()
 
 # ==========================================
-# SIMPLE PROFESSIONAL UI (Your CSS Unchanged)
+# SIMPLE PROFESSIONAL UI
 # ==========================================
 st.markdown("""
 <style>
@@ -93,7 +94,7 @@ input, textarea {
 """, unsafe_allow_html=True)
 
 # ==========================================
-# HISTORY SETUP (UNCHANGED)
+# HISTORY SETUP
 # ==========================================
 HISTORY_FILE = "history.json"
 
@@ -119,7 +120,7 @@ def delete_entry(index):
         json.dump(data, f, indent=4)
 
 # ==========================================
-# YOUTUBE AUDIO DOWNLOAD (UNCHANGED)
+# YOUTUBE AUDIO DOWNLOAD
 # ==========================================
 def download_youtube_audio(url):
     try:
@@ -201,9 +202,8 @@ with tab1:
             try:
                 encoded_audio = base64.b64encode(audio_bytes).decode("utf-8")
 
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=[
+                response = model.generate_content(
+                    [
                         {
                             "role": "user",
                             "parts": [
@@ -221,9 +221,8 @@ with tab1:
 
                 transcript_text = response.text
 
-                result = client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=f"""
+                result = model.generate_content(
+                    f"""
                     Based on this lecture transcript:
 
                     {transcript_text}
@@ -301,6 +300,6 @@ with tab3:
     Built using:
     • Python  
     • Streamlit  
-    • Google Gemini 2.5  
+    • Google Gemini 1.5 Flash  
     • yt-dlp  
     """)
