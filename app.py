@@ -28,7 +28,7 @@ if not user_api_key:
 
 try:
     genai.configure(api_key=user_api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.5-flash")
 except Exception as e:
     st.error(f"Invalid API Key: {e}")
     st.stop()
@@ -130,7 +130,8 @@ def download_youtube_audio(url):
         ydl_opts = {
             'format': 'bestaudio/best',
             'outtmpl': output_path,
-            'quiet': True
+            'quiet': False,
+            'noplaylist': True
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -138,10 +139,10 @@ def download_youtube_audio(url):
             file_path = ydl.prepare_filename(info)
 
         return file_path
-    except Exception as e:
-        print("Download Error:", e)
-        return None
 
+    except Exception as e:
+        st.error(f"YouTube Download Error: {e}")
+        return None
 # ==========================================
 # MAIN TABS
 # ==========================================
@@ -300,6 +301,7 @@ with tab3:
     Built using:
     • Python  
     • Streamlit  
-    • Google Gemini 1.5 Flash  
+    • Google gemini-2.5-flash
     • yt-dlp  
     """)
+
