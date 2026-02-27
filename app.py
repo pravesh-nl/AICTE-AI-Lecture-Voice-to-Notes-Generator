@@ -8,13 +8,6 @@ import tempfile
 import base64
 
 # ==========================================
-# 🔑 PUT YOUR GEMINI API KEY HERE
-# ==========================================
-GEMINI_API_KEY = "ENTER YOUR GEMINI API KEY"
-
-client = genai.Client(api_key=GEMINI_API_KEY)
-
-# ==========================================
 # PAGE CONFIG
 # ==========================================
 st.set_page_config(
@@ -24,66 +17,46 @@ st.set_page_config(
 )
 
 # ==========================================
-# SIMPLE PROFESSIONAL UI
+# 🔐 USER ENTERS GEMINI API KEY
+# ==========================================
+st.sidebar.title("🔐 Gemini API Setup")
+user_api_key = st.sidebar.text_input("Enter your Gemini API Key", type="password")
+
+if not user_api_key:
+    st.sidebar.warning("Please enter your Gemini API key to use the app.")
+    st.stop()
+
+try:
+    client = genai.Client(api_key=user_api_key)
+except Exception as e:
+    st.error(f"Invalid API Key: {e}")
+    st.stop()
+
+# ==========================================
+# SIMPLE PROFESSIONAL UI (Your CSS Unchanged)
 # ==========================================
 st.markdown("""
 <style>
-
-/* ============================= */
-/* NAVY BACKGROUND */
-/* ============================= */
-.stApp {
-    background-color: #0b1f3a;
-}
-
-/* ============================= */
-/* ALL NORMAL TEXT WHITE */
-/* ============================= */
+.stApp { background-color: #0b1f3a; }
 div[data-testid="stMarkdownContainer"] p,
 div[data-testid="stMarkdownContainer"] li,
 div[data-testid="stMarkdownContainer"] span,
-label {
-    color: white !important;
-}
-
-/* Headings */
-h1, h2, h3, h4, h5, h6 {
-    color: white !important;
-}
-
-/* ============================= */
-/* INLINE CODE ( .py , git push ) */
-/* ============================= */
+label { color: white !important; }
+h1, h2, h3, h4, h5, h6 { color: white !important; }
 code {
     background-color: #132a4d !important;
-    color: #ffcc00 !important;   /* Yellow code text */
+    color: #ffcc00 !important;
     padding: 4px 6px;
     border-radius: 6px;
 }
-
-/* ============================= */
-/* SUCCESS ALERT NORMAL */
-/* ============================= */
-div[data-testid="stAlert"] {
-    color: inherit !important;
-}
-
-/* ============================= */
-/* FILE UPLOADER */
-/* ============================= */
+div[data-testid="stAlert"] { color: inherit !important; }
 section[data-testid="stFileUploader"] {
     background-color: #132a4d !important;
     border: 2px dashed #1f3c88 !important;
     border-radius: 12px;
     padding: 20px;
 }
-
-/* 🔴 Drag & Drop + Limit text */
-section[data-testid="stFileUploader"] span {
-    color: red !important;
-}
-
-/* 🟡 Browse Button */
+section[data-testid="stFileUploader"] span { color: red !important; }
 section[data-testid="stFileUploader"] button {
     background-color: #ffcc00 !important;
     color: black !important;
@@ -91,34 +64,18 @@ section[data-testid="stFileUploader"] button {
     font-weight: 600;
     border: none;
 }
-
-/* ============================= */
-/* SELECTBOX */
-/* ============================= */
-
-/* Closed select */
 div[data-baseweb="select"] > div {
     background-color: #132a4d !important;
     color: red !important;
 }
-
-/* Dropdown options */
 ul[role="listbox"] li {
     background-color: #132a4d !important;
     color: red !important;
 }
-
-/* ============================= */
-/* INPUT FIELDS */
-/* ============================= */
 input, textarea {
     background-color: #132a4d !important;
     color: white !important;
 }
-
-/* ============================= */
-/* MAIN BUTTON */
-/* ============================= */
 .stButton>button {
     background-color: #ffcc00;
     color: black !important;
@@ -128,16 +85,15 @@ input, textarea {
     font-weight: 600;
     border: none;
 }
-
 .stButton>button:hover {
     background-color: #ffd84d;
     color: black !important;
 }
-
 </style>
 """, unsafe_allow_html=True)
+
 # ==========================================
-# HISTORY SETUP
+# HISTORY SETUP (UNCHANGED)
 # ==========================================
 HISTORY_FILE = "history.json"
 
@@ -163,7 +119,7 @@ def delete_entry(index):
         json.dump(data, f, indent=4)
 
 # ==========================================
-# YOUTUBE AUDIO DOWNLOAD
+# YOUTUBE AUDIO DOWNLOAD (UNCHANGED)
 # ==========================================
 def download_youtube_audio(url):
     try:
@@ -200,8 +156,6 @@ with tab1:
     st.title("🎙 Lecture Voice-to-Notes Generator")
     st.divider()
 
-    
-
     st.subheader("Upload Audio File")
     audio_file = st.file_uploader("Upload .mp3, .wav, .m4a", type=["mp3", "wav", "m4a"])
 
@@ -209,8 +163,6 @@ with tab1:
 
     st.subheader("Enter YouTube Link")
     youtube_link = st.text_input("Paste YouTube URL")
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
     st.divider()
 
@@ -227,16 +179,13 @@ with tab1:
 
         with st.spinner("Processing..."):
 
-            transcript_text = ""
             audio_bytes = None
             mime_type = None
 
-            # AUDIO UPLOAD
             if audio_file:
                 audio_bytes = audio_file.read()
                 mime_type = audio_file.type
 
-            # YOUTUBE LINK
             elif youtube_link:
                 file_path = download_youtube_audio(youtube_link)
 
@@ -249,9 +198,6 @@ with tab1:
 
                 mime_type = "audio/mp4"
 
-            # ======================================
-            # TRANSCRIPTION USING GEMINI 2.5 FLASH
-            # ======================================
             try:
                 encoded_audio = base64.b64encode(audio_bytes).decode("utf-8")
 
@@ -273,20 +219,8 @@ with tab1:
                     ]
                 )
 
-                if not response or not response.text:
-                    st.error("Transcription failed: Empty response.")
-                    st.stop()
-
                 transcript_text = response.text
 
-            except Exception as e:
-                st.error(f"Transcription failed: {e}")
-                st.stop()
-
-            # ======================================
-            # STUDY CONTENT GENERATION
-            # ======================================
-            try:
                 result = client.models.generate_content(
                     model="gemini-2.5-flash",
                     contents=f"""
@@ -304,12 +238,8 @@ with tab1:
                     """
                 )
 
-                if not result or not result.text:
-                    st.error("Study generation failed: Empty response.")
-                    st.stop()
-
             except Exception as e:
-                st.error(f"Study generation failed: {e}")
+                st.error(f"Processing failed: {e}")
                 st.stop()
 
             st.success("✅ Study Material Generated Successfully!")
@@ -373,5 +303,4 @@ with tab3:
     • Streamlit  
     • Google Gemini 2.5  
     • yt-dlp  
-
     """)
