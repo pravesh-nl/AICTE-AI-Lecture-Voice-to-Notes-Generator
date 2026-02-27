@@ -3,4 +3,5 @@ google-generativeai
 youtube-transcript-api
 pytube
 moviepy
+yt-dlp
 python-dotenv
