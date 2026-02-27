@@ -10,7 +10,7 @@ import base64
 # ==========================================
 # 🔑 PUT YOUR GEMINI API KEY HERE
 # ==========================================
-GEMINI_API_KEY = "AIzaSyDKw5_bOL41cnxs4NHa1i10wggeMexWnXg"
+GEMINI_API_KEY = "ENTER YOUR GEMINI API KEY"
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -373,4 +373,5 @@ with tab3:
     • Streamlit  
     • Google Gemini 2.5  
     • yt-dlp  
+
     """)
